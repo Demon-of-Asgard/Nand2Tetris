@@ -42,5 +42,24 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+        Mux16 (a[0..15]=x[0..15],b[0..15]=false, sel = zx, out[0..15]=Zxx); //Zxx=[16]*0 if zx=1 [16]*1 otherwise 
+        Mux16 (a[0..15]=y[0..15],b[0..15]=false, sel = zy, out[0..15]=Zyy);
+
+        Not16 (in[0..15]=Zxx,out[0..15]=Nxx);
+        Not16 (in[0..15]=Zyy,out[0..15]=Nyy);
+
+        Mux16 (a[0..15]=Zxx,b[0..15]=Nxx,sel=nx,out[0..15]=xNx);
+        Mux16 (a[0..15]=Zyy,b[0..15]=Nyy,sel=ny,out[0..15]=yNy);
+
+        Add16 (a[0..15]=xNx,b[0..15]=yNy,out[0..15]=xNxPlusyNy);
+        And16 (a[0..15]=xNx,b[0..15]=yNy,out[0..15]=xNxAndyNy);
+
+        Mux16 (a[0..15]=xNxAndyNy,b[0..15]=xNxPlusyNy,sel=f,out[0..15]=xFy);
+        Not16 (in[0..15]=xFy,out[0..15]=NxFy);
+
+        Mux16 (a[0..15]=xFy,b[0..15]=NxFy,sel=no,out[0..15]=out[0..15],out[0..7]=outhalf1,out[8..15]=outhalf2,out[15]=ng);
+        Or8Way (in[0..7]=outhalf1,out=orhalf1);
+        Or8Way (in[0..7]=outhalf2,out=orhalf2);
+        Or (a=orhalf1,b=orhalf2,out=orout);
+        Not (in=orout,out=zr);
 }
